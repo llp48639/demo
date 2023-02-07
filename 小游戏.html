@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style type="text/css">
+			*{
+				margin: 0;
+				padding: 0;
+				-moz-user-select: none;
+				-webkit-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+			}
+			body{
+				text-align: center;
+			}
+			h1{
+				padding: 30px 0px;
+			}
+			button{
+				margin: 30px 0px;
+			}
+			.obox{
+				width: 90%;
+				max-width: 1000px;
+				border: solid 1px black;
+				height: 450px;
+				margin: 0 auto;
+				position: relative;
+				top: 0;
+				/*animation: myobox 0.15s 5;*/
+			}
+			@keyframes myobox{
+				0%{top: 0;}
+				25%{top: 5px;}
+				50%{top: 0;}
+				75%{top: -5px;}
+				100%{top: 0;}
+			}
+			.box{
+				background: red;
+				position: absolute;
+				width: 100px;
+				left: -101px;
+				top: -1px;
+				line-height: 30px;
+				padding: 20px 0px;
+			}
+			.active{
+				width: 24px;
+				height: 24px;
+				position: absolute;
+				top: 0px;
+				left: 0px;
+			}
+			.pop_up{
+				position: fixed;
+				top: 0px;
+				left: 0px;
+				width: 100%;
+				height: 100vh;
+				background: rgba(0,0,0,0.3);
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				display: none;
+			}
+			.pop_info{
+				background: white;
+				width: 300px;
+				padding: 30px 0px;
+				border-radius: 10px;
+			}
+			.pop_info h3{
+				font-size: 50px;
+			}
+			.pop_info button{
+				background: rgb(0,130,26);
+				color: white;
+				border: none;
+				outline: medium;
+				padding:5px 10px;
+				margin: 20px 10px 0px;
+				border-radius: 5px;
+			}
+		</style>
+		<script type="text/javascript">
+			document.addEventListener("DOMContentLoaded",function(){
+				var btn = document.querySelector(".btn");
+				var obox = document.querySelector(".obox");
+				var getScore = document.querySelector(".getScore");
+				var loseScore = document.querySelector(".loseScore");
+				var pop_up = document.querySelector(".pop_up");
+				var ok_btn = document.querySelector(".ok_btn");
+				var keep_btn = document.querySelector(".keep_btn");
+				var getScore_num = 0;//得分
+				var loseScore_num = 0;//失分
+				var x1 = 3;//左右晃动的偏移值
+				var speed = 10;//下落速度
+				var drow ="";
+				//点击游戏开始按钮
+				btn.onclick = function(){
+					this.innerHTML = "游戏正在进行中";
+					this.setAttribute("disabled","disabled");
+					getScore_num = 0;//得分
+					loseScore_num = 0;//失分
+					getScore.innerHTML = getScore_num ;
+					loseScore.innerHTML = loseScore_num;
+					speed = 1;
+					creatimg();
+				}
+				function creatimg(){
+					obox.style.animation="none";
+					//随机生成一张图片
+					var img = document.createElement("img");
+					var n1 = Math.ceil(Math.random()*50);//[1,50]
+					img.src = "img/qq/"+n1+".gif";
+					img.setAttribute("draggable",false);
+					obox.appendChild(img);
+					//位置也是随机的
+					img.className="active";
+					img.style.left =Math.floor(Math.random()*(obox.clientWidth-img.offsetWidth))+"px";
+					drow = requestAnimationFrame(imgdrow);
+					function imgdrow(){
+						var y = img.offsetTop;
+						//得分每加5,速度加快
+						speed = parseInt(getScore_num/5)+1;
+						img.style.top = y+speed+"px";
+						//判断是否碰到底部
+						if(img.offsetTop+img.offsetHeight>=obox.clientHeight){
+							img.onclick = null;
+							img.src = "img/qq/51.gif";
+							obox.style.animation=" myobox 0.15s 4";
+							img.style.top = obox.clientHeight-img.offsetHeight+"px";
+							loseScore_num++;
+							loseScore.innerHTML = loseScore_num;
+							setTimeout(function(){
+								obox.removeChild(img);
+								if(loseScore_num>=5){
+									pop_up.style.display="flex";
+								}else{
+									creatimg();
+								}
+							},600)
+						}else{
+							console.log(1)
+							drow=requestAnimationFrame(imgdrow);
+						}
+					}
+					//点击图片，变猪头，猪头左右晃动，得分+1，消失，出现新的图
+					img.onmousedown = function(){
+						img.onclick = null;
+						img.src = "img/qq/52.gif";
+						cancelAnimationFrame(drow);
+						var x = img.offsetLeft;
+						//左右晃动						
+						var arr = [1,2,3,2,1,0,-1,-2,-3,-2,-1,0];
+						var n = 0;
+						var i = 0;
+						waggle();
+						function waggle(){
+							n++;
+							i++;
+							if(i==arr.length){
+								i=0;
+							}
+							if(n<30){
+								requestAnimationFrame(waggle)
+							}else{
+								getScore_num++;
+								getScore.innerHTML=getScore_num;
+								obox.removeChild(img);	
+								creatimg();
+							}
+							img.style.left = x+arr[i]+"px";
+							
+						}
+					}
+				}
+				
+				//点击确定
+				ok_btn.onclick = function(){
+					pop_up.style.display="none";
+					btn.innerHTML = "开始游戏";
+					btn.removeAttribute("disabled");
+				}
+				//点击继续游戏
+				keep_btn.onclick = function(){
+					pop_up.style.display="none";
+					loseScore_num = 0;
+					loseScore.innerHTML = loseScore_num;
+					creatimg();
+				}
+				
+			})
+		</script>
+	</head>
+	<body>
+		<h1>你的鼠标有多块？</h1>
+		<p>游戏说明：点击“开始游戏”，随机掉下QQ表情，点中它，千万别让它掉下去!!!</p>
+		<button class="btn">开始游戏</button>
+		<div class="obox">
+			<div class="box">
+				<p>得分：<b class="getScore">0</b>分</p>
+				<p>失分：<b class="loseScore">0</b>分</p>
+			</div>
+		</div>
+		<div class="pop_up">
+			<div class="pop_info">
+				<h3>游戏结束</h3>
+				<button class="ok_btn">确定</button>
+				<button class="keep_btn">继续游戏</button>
+			</div>
+		</div>
+	</body>
+</html>
